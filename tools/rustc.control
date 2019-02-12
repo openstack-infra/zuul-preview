@@ -1,0 +1,17 @@
+# The rust:slim base image already has rust and cargo
+# installed, but they are installed from source. This will
+# be used to create a dummy package so that things that
+# say they need rust won't actually install an
+# entire rust that is unneeded.
+Section: misc
+Priority: optional
+Standards-Version: 2.3.3
+
+Package: rustc
+# Set the version to 2.0.0 so that it'll always be a greater
+# version than any version of rustc in the archive.
+Version: 2.0.0
+Section: mail
+Maintainer: Some Body
+Architecture: all
+Description: Dummy rustc package

@@ -13,18 +13,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-FROM debian:testing-slim as builder
+FROM rust:slim as builder
 
 RUN mkdir -p /output/bindep
-RUN apt-get update && apt-get install -y python3-pip git && pip3 install bindep
+RUN apt-get update && apt-get install -y python3-pip git equivs && pip3 install bindep
+
+COPY tools/rustc.control /tmp/rustc.control
+COPY tools/cargo.control /tmp/cargo.control
+RUN equivs-build /tmp/rustc.control \
+  && equivs-build /tmp/cargo.control \
+  && dpkg -i rustc_2.0.0_all.deb cargo_2.0.0_all.deb
+
 COPY bindep.txt /bindep.txt
 RUN cd / && bindep -l newline > /output/bindep/run.txt
 RUN apt-get install -y $(bindep -b compile)
+
 COPY . /src
 RUN cd /src \
   && cargo build --release
 
-FROM debian:testing-slim
+FROM debian:stretch-slim
 
 COPY --from=builder /output/bindep/run.txt /run.txt
 RUN apt-get update \
@@ -32,7 +40,7 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* /run.txt \
   && a2enmod rewrite proxy proxy_http
-COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
+COPY tools/vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY --from=builder /src/target/release/zuul-preview /usr/local/bin/zuul-preview
 
 EXPOSE 80
