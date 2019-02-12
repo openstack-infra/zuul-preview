@@ -18,6 +18,4 @@ Then you can build the code:
 
 .. code-block:: bash
 
-  autoreconf -fi
-  ./configure
-  make
+  cargo build
