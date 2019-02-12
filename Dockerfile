@@ -22,10 +22,7 @@ RUN cd / && bindep -l newline > /output/bindep/run.txt
 RUN apt-get install -y $(bindep -b compile)
 COPY . /src
 RUN cd /src \
-  && autoreconf -fi \
-  && ./configure --with-comment=$(git describe --always) \
-  && make \
-  && make install
+  && cargo build --release
 
 FROM debian:testing-slim
 
@@ -36,7 +33,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* /run.txt \
   && a2enmod rewrite proxy proxy_http
 COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
-COPY --from=builder /usr/local /usr/local
+COPY --from=builder /src/target/release/zuul-preview /usr/local/bin/zuul-preview
 
 EXPOSE 80
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
