@@ -70,27 +70,28 @@ fn main() -> Result<(), PreviewError> {
             continue;
         }
         let parts: Vec<&str> = hostname.split('.').collect();
-        if parts.len() < 3 {
-            println!("NULL");
-            continue;
-        }
-        let artifact = parts[0];
-        let buildid = parts[1];
-        let _tenant = parts[2];
-        recoverable(|| {
-            let base = Url::parse(api_url)?;
-            let url = base.join(&format!("/api/build/{}", buildid))?;
-            let mut response = client.get(url).send()?;
-            let build = &response.json::<Build>()?;
-            for build_artifact in build.artifacts {
-                if build_artifact.name == artifact {
-                    println!("{}", build_artifact.url);
-                    cache.put(hostname.clone(), build_artifact.url.clone());
-                } else {
-                    println!("NULL");
-                }
+        match parts[..] {
+            [artifact, buildid, _tenant] => {
+                recoverable(|| {
+                    let base = Url::parse(api_url)?;
+                    let url = base.join(&format!("/api/build/{}", buildid))?;
+                    let mut response = client.get(url).send()?;
+		    let build = &response.json::<Build>()?;
+		    for build_artifact in build.artifacts {
+			if build_artifact.name == artifact {
+			    println!("{}", build_artifact.url);
+			    cache.put(hostname.clone(), build_artifact.url.clone());
+			} else {
+			    println!("NULL");
+			}
+                    }
+                });
             }
-        });
+            _ => {
+              println!("Not enough hostname parts");
+              continue;
+            }
+        }
     }
     Ok(())
 }
