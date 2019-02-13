@@ -57,26 +57,27 @@ fn main() -> Result<(), PreviewError> {
             continue;
         }
         let parts: Vec<&str> = hostname.split('.').collect();
-        if parts.len() < 3 {
-            println!("Not enough hostname parts");
-            continue;
-        }
-        let _artifact = parts[0];
-        let buildid = parts[1];
-        let _tenant = parts[2];
-        recoverable(|| {
-            let base = Url::parse(api_url)?;
-            let url = base.join(&format!("/api/build/{}", buildid))?;
-            let mut response = client.get(url).send()?;
-            match &response.json::<Value>()?["log_url"] {
-                Value::String(log_url) => {
-                    println!("{}", log_url);
-                    cache.put(hostname.clone(), log_url.clone());
-                    Ok(())
-                }
-                _ => Err(PreviewError::JsonSchema),
+        match parts[..] {
+            [_artifact, buildid, _tenant] => {
+                recoverable(|| {
+                    let base = Url::parse(api_url)?;
+                    let url = base.join(&format!("/api/build/{}", buildid))?;
+                    let mut response = client.get(url).send()?;
+                    match &response.json::<Value>()?["log_url"] {
+                        Value::String(log_url) => {
+                            println!("{}", log_url);
+                            cache.put(hostname.clone(), log_url.clone());
+                            Ok(())
+                        }
+                        _ => Err(PreviewError::JsonSchema),
+                    }
+                });
             }
-        });
+            _ => {
+              println!("Not enough hostname parts");
+              continue;
+            }
+        }
     }
     Ok(())
 }
