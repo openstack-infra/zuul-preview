@@ -1,7 +1,17 @@
+- job:
+    name: zuul-preview-build
+    parent: openstack-buildset-registry
+    run: playbooks/build-image.yaml
+    provides: docker-image
+    vars:
+      docker_images:
+        - context: .
+          repository: zuul/zuul-preview
+
 - project:
     check:
       jobs:
-        - noop
+        - zuul-preview-build
     gate:
       jobs:
-        - noop
+        - zuul-preview-build
