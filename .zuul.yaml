@@ -1,7 +1,53 @@
+# Image building jobs
+- secret:
+    name: zuul-preview-dockerhub
+    data:
+      username: zuulzuul
+      password: !encrypted/pkcs1-oaep
+        - LZGNolqf2Y54m56CnmrAFZeAnQie0RZ3nBRtX1zqr8PUpZZRrACwVck0Nec8w9rmkCMiA
+          ic4Sm5b9kzAPT60sZ0G0R2SeZzE3g2HxMdDyzyjcpY+8xliU4BuR+RUOg12WuA1ivZb5g
+          JJP2N/hoYydBrVW1em7oChhhhoTEtSgf7FgQMWB5O/WsZ/8ukrOCo1Wwb5+9q7BolEHtW
+          KfHpTWv0PkAjJlQW36WZYi4Pgo84gd+H1RXx1/KzeUhuV+iINeroTrlP4cf2fSoOEjnoT
+          jLhIBa8d3ep6URdXexNfAr0bQoz36xocmy8bu6PYTJbS1lcTsKEvNe0I7hyNHV/HwKwRr
+          4CCsHjqMSdN/hSbmpkFjQsJOgjHMFYwt7QuFlGkY3MT0/WUAPmx0gGF/XJfFMwqUdxk7g
+          GqMYee2MHohDkHF6O4CVmoAJGGZ1hRD9BfdXeCbYyETu+6rTlyXcbViPM2Tu9NFVcCQDJ
+          SuFy5Lmts5huiZWiVzL87Ql5AxcgM49WuA3FDnLKZV3KH78VmWJOudNnMttxg/29E40+J
+          hNjvRuhawyXarlarURPESEXRT49E4ywDuAE6MqJGDiWXdqv5LrHep1iAdyFd/1J/KD82T
+          nadoBxpFGzzkcVV+H3EnfMQmUJ8UMA6YmF1jx5XpIR0Wj7j+OhbJTCMCruG6Xs=
+
+- job:
+    name: zuul-preview-build-image
+    parent: opendev-build-docker-image
+    vars: &zuul_preview_image_vars
+      docker_images:
+        - context: .
+          repository: zuul/zuul-preview
+
+- job:
+    name: zuul-preview-upload-image
+    parent: opendev-upload-docker-image
+    vars: *zuul_preview_image_vars
+    secrets:
+      name: docker_credentials
+      secret: zuul-preview-dockerhub
+      pass-to-parent: true
+
+- job:
+    name: zuul-preview-promote-image
+    parent: opendev-promote-docker-image
+    vars: *zuul_preview_image_vars
+    secrets:
+      name: docker_credentials
+      secret: zuul-preview-dockerhub
+      pass-to-parent: true
+
 - project:
     check:
       jobs:
-        - noop
+        - zuul-preview-build-image
     gate:
       jobs:
-        - noop
+        - zuul-preview-upload-image
+    promote:
+      jobs:
+        - zuul-preview-promote-image
