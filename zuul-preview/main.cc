@@ -122,7 +122,7 @@ int main(int, char**)
   // (protected by an internal mutex) and expect exactly one line of
   // output for each.
   // Expected input:
-  // https://zuul.opendev.org site.926bb0aaddad4bc3853269451e115dcb.openstack.preview.opendev.org
+  // https://zuul.opendev.org site.167715b656ee4504baa940c5bd9f3821.openstack.preview.opendev.org
   while (getline(cin, input)) {
 
     // Split the input into api_url, hostname
@@ -163,10 +163,16 @@ int main(int, char**)
         web::http::methods::GET, uri.to_string()).get();
       // body is a web::json::value
       auto body = response.extract_json().get();
+      auto artifacts = body["artifacts"].as_array();
 
-      // TODO: use artifact instead of log_url
-      // body["log_url"].as_string() returns a const std::string&
-      cout << body["log_url"].as_string() << endl;
+      string artifact_url = "Artifact_not_found";
+      for (uint i = 0; i < artifacts.size(); i++) {
+        if (artifacts[i]["name"].as_string() == artifact) {
+          artifact_url = artifacts[i]["url"].as_string();
+        }
+      }
+
+      cout << artifact_url << endl;
 
       cache.put(hostname, body["log_url"].as_string());
     } catch (...) {
