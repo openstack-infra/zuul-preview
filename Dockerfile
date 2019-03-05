@@ -41,4 +41,4 @@ COPY --from=builder /usr/local /usr/local
 EXPOSE 80
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 ENV ZUUL_API_URL=
-CMD ["/usr/sbin/apachectl-does-not-exist", "-DFOREGROUND", "-e", "info"]
+CMD ["/usr/sbin/apachectl", "-DFOREGROUND", "-e", "info"]
