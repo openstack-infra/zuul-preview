@@ -7,5 +7,5 @@ edition = "2018"
 [dependencies]
 reqwest = "*"
 lru = "*"
-serde_json = "*"
+serde = { version = "1.0", features = ["derive"] }
 custom_error = "*"
