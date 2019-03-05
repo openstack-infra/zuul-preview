@@ -38,7 +38,7 @@ RUN apt-get update \
 COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY --from=builder /usr/local /usr/local
 
-EXPOSE 80
+EXPOSE 8080
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 ENV ZUUL_API_URL=
 CMD ["/usr/sbin/apachectl", "-DFOREGROUND", "-e", "info"]
