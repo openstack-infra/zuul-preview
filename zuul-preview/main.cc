@@ -128,7 +128,7 @@ int main(int, char**)
     // Split the input into api_url, hostname
     auto parts = split(input, ' ');
     if (parts.size() != 2) {
-      cout << "Wrong number of args" << endl;
+      cout << "NULL" << endl;
       continue;
     }
     auto api_url = parts[0];
@@ -144,7 +144,7 @@ int main(int, char**)
     // build url.
     parts = split(hostname, '.');
     if (parts.size() < 3) {
-      cout << "Not enough hostname parts" << endl;
+      cout << "NULL" << endl;
       continue;
     }
     auto artifact = parts[0];
@@ -179,7 +179,7 @@ int main(int, char**)
       // If anything goes wrong, we still need to return only a single
       // string to apache, and recover for the next request, so we
       // have a general exception handler here.
-      cout << "Error" << endl;
+      cout << "NULL" << endl;
     }
   }
 }
