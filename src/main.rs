@@ -25,19 +25,28 @@
 #[macro_use]
 extern crate custom_error;
 extern crate lru;
-extern crate serde_json;
 
 use std::io::{self, BufRead};
 
 use lru::LruCache;
 use reqwest::{self, Client, Url, UrlError};
-use serde_json::Value;
+use serde::{Deserialize};
 
 custom_error! {PreviewError
     InvalidData{source: UrlError} = "Garbage In",
-    JsonSchema = "JSON schema problem",
     Http{source: reqwest::Error} = "HTTP Fail",
     Io{source: io::Error} = "IO Things",
+}
+
+#[derive(Deserialize)]
+struct ZuulArtifact {
+    name: String,
+    url: String,
+}
+
+#[derive(Deserialize)]
+struct ZuulBuild {
+    artifacts: Vec<ZuulArtifact>,
 }
 
 fn main() -> Result<(), PreviewError> {
@@ -47,7 +56,7 @@ fn main() -> Result<(), PreviewError> {
         let line = line?;
         let parts: Vec<&str> = line.split(' ').collect();
         if parts.len() != 2 {
-            println!("Wrong number of args {:?}", parts);
+            println!("NULL");
             continue;
         }
         let api_url = parts[0];
@@ -58,24 +67,25 @@ fn main() -> Result<(), PreviewError> {
         }
         let parts: Vec<&str> = hostname.split('.').collect();
         if parts.len() < 3 {
-            println!("Not enough hostname parts");
+            println!("NULL");
             continue;
         }
-        let _artifact = parts[0];
+        let artifact = parts[0];
         let buildid = parts[1];
         let _tenant = parts[2];
         recoverable(|| {
             let base = Url::parse(api_url)?;
             let url = base.join(&format!("/api/build/{}", buildid))?;
-            let mut response = client.get(url).send()?;
-            match &response.json::<Value>()?["log_url"] {
-                Value::String(log_url) => {
-                    println!("{}", log_url);
-                    cache.put(hostname.clone(), log_url.clone());
-                    Ok(())
+            let build: ZuulBuild = client.get(url).send()?.json()?;
+            for build_artifact in build.artifacts {
+                if build_artifact.name == artifact {
+                    println!("{}", build_artifact.url);
+                    cache.put(hostname.clone(), build_artifact.url.clone());
+                } else {
+                    println!("NULL");
                 }
-                _ => Err(PreviewError::JsonSchema),
             }
+            Ok(())
         });
     }
     Ok(())
@@ -86,7 +96,7 @@ where
     F: FnMut() -> Result<(), PreviewError>,
 {
     match func() {
-        Err(e) => println!("Error {}", e),
+        Err(_) => println!("NULL"),
         Ok(_) => (),
     }
 }
