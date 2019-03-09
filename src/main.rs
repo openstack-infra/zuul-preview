@@ -32,6 +32,8 @@ use lru::LruCache;
 use reqwest::{self, Client, Url, UrlError};
 use serde::{Deserialize};
 
+use zuul_preview::Query;
+
 custom_error! {PreviewError
     InvalidData{source: UrlError} = "Garbage In",
     Http{source: reqwest::Error} = "HTTP Fail",
@@ -54,18 +56,21 @@ fn main() -> Result<(), PreviewError> {
     let client = Client::new();
     for line in io::stdin().lock().lines() {
         let line = line?;
-        let parts: Vec<&str> = line.split(' ').collect();
-        if parts.len() != 2 {
-            println!("NULL");
-            continue;
-        }
-        let api_url = parts[0];
-        let hostname = parts[1].to_string();
-        if let Some(val) = cache.get(&hostname) {
+
+        let query = match Query::new(line) {
+            Ok(q) => q,
+            Err(e) => {
+                println!("{}", e);
+                continue;
+            },
+        };
+
+        if let Some(val) = cache.get(&query.hostname) {
             println!("{}", val);
             continue;
         }
-        let parts: Vec<&str> = hostname.split('.').collect();
+
+        let parts: Vec<&str> = query.hostname.split('.').collect();
         if parts.len() < 3 {
             println!("NULL");
             continue;
@@ -74,13 +79,13 @@ fn main() -> Result<(), PreviewError> {
         let buildid = parts[1];
         let _tenant = parts[2];
         recoverable(|| {
-            let base = Url::parse(api_url)?;
+            let base = Url::parse(&query.api_url[..])?;
             let url = base.join(&format!("/api/build/{}", buildid))?;
             let build: ZuulBuild = client.get(url).send()?.json()?;
             for build_artifact in build.artifacts {
                 if build_artifact.name == artifact {
                     println!("{}", build_artifact.url);
-                    cache.put(hostname.clone(), build_artifact.url.clone());
+                    cache.put(query.hostname.clone(), build_artifact.url.clone());
                 } else {
                     println!("NULL");
                 }
