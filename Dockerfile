@@ -33,7 +33,7 @@ RUN apt-get update \
   && rm -rf /var/lib/apt/lists/* /run.txt \
   && a2enmod rewrite proxy proxy_http
 COPY ./vhost.conf /etc/apache2/sites-available/000-default.conf
-COPY --from=builder /src/target/release/zuul-preview /usr/local/bin/zuul-preview
+COPY --from=builder /src/target/release/zuul_preview /usr/local/bin/zuul-preview
 
 EXPOSE 80
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
