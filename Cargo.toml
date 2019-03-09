@@ -1,5 +1,5 @@
 [package]
-name = "zuul-preview"
+name = "zuul_preview"
 version = "0.1.0"
 authors = ["Clint Byrum <clint@fewbar.com>"]
 edition = "2018"
