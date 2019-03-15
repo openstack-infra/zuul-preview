@@ -30,4 +30,5 @@ EXTRA_DIST = \
 bin_PROGRAMS = zuul-preview/zuul-preview
 zuul_preview_zuul_preview_LDADD = ${LTLIBCPPREST}
 zuul_preview_zuul_preview_SOURCES = \
+	zuul-preview/zuul_preview.cc \
 	zuul-preview/main.cc

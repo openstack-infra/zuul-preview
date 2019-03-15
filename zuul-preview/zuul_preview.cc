@@ -23,12 +23,11 @@
  * that to look up a build URL which it emits on standard output.
  */
 
-
 #include <config.h>
-#include "zuul_preview.h"
-
-
-namespace zuul_preview {
+#include <pthread.h>
+#include <boost/optional.hpp>
+#include <cpprest/http_client.h>
+#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -42,6 +41,74 @@ vector<string> split(const string &in, char delim)
   }
   return parts;
 }
+
+// An LRU cache of hostname->URL mappings.
+class Cache {
+  // A queue of hostname, URL pairs.  The head of the queue is always
+  // the most recently accessed entry, the tail is the least.
+  list<pair<const string, const string>> queue;
+
+  // A map of hostname -> iterator that points into the queue, for
+  // quick lookup.
+  unordered_map<string, list<pair<const string, const string>>::iterator> map;
+
+  // The maximum size of the cache.
+  const uint32_t size;
+
+public:
+  Cache(uint s)
+    : queue {}, map {}, size{s}
+  { }
+
+  // Lookup the hostname in the cache and return the URL if present.
+  // If the entry is present, it is moved to the head of the queue.
+  boost::optional<const string> get(const string &key)
+  {
+    auto location = map.find(key);
+    if (location == map.end())
+      return {};
+
+    auto val = *(location->second);
+    queue.erase(location->second);
+    queue.push_front(val);
+    return val.second;
+  }
+
+  // Add an entry to the cache.  If the cache is full, drop the least
+  // recently used entry.
+  void put(const string &key, const string &value)
+  {
+    auto location = map.find(key);
+    if (location != map.end())
+      return;
+
+    if (queue.size() == size) {
+      auto last = queue.back();
+      queue.pop_back();
+      map.erase(last.first);
+    }
+
+    queue.push_front(make_pair(key, value));
+    map[key] = queue.begin();
+  }
+};
+
+class ClientCache {
+  unordered_map<string, web::http::client::http_client> clients;
+public:
+  ClientCache() : clients{} { }
+
+  web::http::client::http_client get(const string &key)
+  {
+    auto location = clients.find(key);
+    if (location == clients.end()) {
+      auto value = web::http::client::http_client(key);
+      clients.insert(make_pair(key, value));
+      return value;
+    }
+    return location->second;
+  }
+};
 
 int main(int, char**)
 {
@@ -115,8 +182,4 @@ int main(int, char**)
       cout << "NULL" << endl;
     }
   }
-
-  return EXIT_SUCCESS;
 }
-
-}  // namespace zuul_preview
