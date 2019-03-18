@@ -16,6 +16,15 @@
           nadoBxpFGzzkcVV+H3EnfMQmUJ8UMA6YmF1jx5XpIR0Wj7j+OhbJTCMCruG6Xs=
 
 - job:
+    name: zuul-preview-cpptests
+    parent: opendev-build-docker-image
+    vars:
+      docker_images:
+        - context: .
+          repository: zuul/zuul-preview
+          dockerfile: Dockerfile.cpptests
+
+- job:
     name: zuul-preview-build-image
     parent: opendev-build-docker-image
     vars: &zuul_preview_image_vars
@@ -45,6 +54,7 @@
     check:
       jobs:
         - zuul-preview-build-image
+        - zuul-preview-cpptests
     gate:
       jobs:
         - zuul-preview-upload-image
