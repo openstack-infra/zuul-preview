@@ -31,3 +31,8 @@ bin_PROGRAMS = zuul-preview/zuul-preview
 zuul_preview_zuul_preview_LDADD = ${LTLIBCPPREST}
 zuul_preview_zuul_preview_SOURCES = \
 	zuul-preview/main.cc
+
+check_PROGRAMS = tests/zuul_preview_tests
+tests_zuul_preview_tests_LDADD = ${LTLIBGTEST}
+tests_zuul_preview_tests_SOURCES = \
+        tests/zuul_preview_tests.cc

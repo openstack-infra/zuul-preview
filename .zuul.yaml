@@ -45,6 +45,7 @@
     check:
       jobs:
         - zuul-preview-build-image
+        - zuul-preview-cpptests
     gate:
       jobs:
         - zuul-preview-upload-image
