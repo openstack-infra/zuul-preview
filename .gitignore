@@ -1,6 +1,7 @@
 *.py[cod]
 zuul-preview*.tar.gz
 zuul-preview/zuul-preview
+tests/zuul_preview_tests
 target
 
 # C extensions
