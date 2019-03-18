@@ -8,3 +8,4 @@ gnulib [compile test]
 gettext [compile test]
 libcpprest-dev [compile test]
 libcpprest
+libgtest-dev [test]

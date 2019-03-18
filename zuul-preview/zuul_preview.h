@@ -21,6 +21,11 @@
 #ifndef ZUUL_PREVIEW_H_
 #define ZUUL_PREVIEW_H_
 
+// This must be defined before we include the C++Rest header or else
+// googletest complains.
+// See: https://github.com/Microsoft/cpprestsdk/issues/230
+#define _TURN_OFF_PLATFORM_STRING
+
 #include <list>
 #include <boost/optional.hpp>
 #include <cpprest/http_client.h>
