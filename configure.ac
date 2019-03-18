@@ -48,6 +48,7 @@ LT_LANG([C++])
 
 OPENDEV_CANONICAL_TARGET
 REQUIRE_LIBCPPREST
+REQUIRE_LIBGTEST
 
 #########################################################################
 

@@ -24,7 +24,8 @@ COPY . /src
 RUN cd /src \
   && autoreconf -fi \
   && ./configure --with-comment=$(git describe --always) \
-  && make \
+  && make check \
+  && ./tests/zuul_preview_tests \
   && make install
 
 FROM debian:testing-slim
