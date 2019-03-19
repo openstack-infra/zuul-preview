@@ -21,21 +21,9 @@
 // NOTE(Shrews): Important to include gtest.h before any headers that include
 // cpprest headers b/c of: https://github.com/Microsoft/cpprestsdk/issues/230
 #include "gtest/gtest.h"
-#include "zuul-preview/zuul_preview.h"
+#include "zuul-preview/urlmapper.h"
 
-namespace {
-
-using namespace std;
-using namespace zuul_preview;
-
-TEST(TestSplit, SplitSuccess) {
-    vector<string> expected;
-    expected.push_back(string("a"));
-    expected.push_back(string("b"));
-    expected.push_back(string("c"));
-    vector<string> actual = split("a.b.c", '.');
-    ASSERT_EQ(expected, actual);
-}
+namespace zuul_preview {
 
 TEST(TestCache, GetReturnsOptional) {
     Cache cache{10};
@@ -53,4 +41,27 @@ TEST(TestCache, PushGet) {
     ASSERT_EQ(value, *ret);
 }
 
-}  // namespace
+// We expect exactly 2 parts on the input line.
+TEST(TestURLMapper, MapFailMissingInput) {
+    URLMapper mapper;
+    const string input("part1");
+    const string ret = mapper.map(input);
+    ASSERT_EQ("NULL", ret);
+}
+
+TEST(TestURLMapper, MapFailExtraInput) {
+    URLMapper mapper;
+    const string input("part1 part2 part3");
+    const string ret = mapper.map(input);
+    ASSERT_EQ("NULL", ret);
+}
+
+// We expect at least 3 parts to the hostname portion
+TEST(TestURLMapper, MapFailHostnameParse) {
+    URLMapper mapper;
+    const string input("part1 invalid.part2");
+    const string ret = mapper.map(input);
+    ASSERT_EQ("NULL", ret);
+}
+
+}  // namespace zuul_preview
