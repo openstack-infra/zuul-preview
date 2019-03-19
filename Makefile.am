@@ -30,9 +30,21 @@ EXTRA_DIST = \
 bin_PROGRAMS = zuul-preview/zuul-preview
 zuul_preview_zuul_preview_LDADD = ${LTLIBCPPREST}
 zuul_preview_zuul_preview_SOURCES = \
+	zuul-preview/cache.h \
+	zuul-preview/cache.cc \
+	zuul-preview/clientcache.h \
+	zuul-preview/clientcache.cc \
+	zuul-preview/urlmapper.h \
+	zuul-preview/urlmapper.cc \
 	zuul-preview/main.cc
 
 check_PROGRAMS = tests/zuul_preview_tests
 tests_zuul_preview_tests_LDADD = ${LTLIBGTEST}
 tests_zuul_preview_tests_SOURCES = \
+	zuul-preview/cache.h \
+	zuul-preview/cache.cc \
+	zuul-preview/clientcache.h \
+	zuul-preview/clientcache.cc \
+	zuul-preview/urlmapper.h \
+	zuul-preview/urlmapper.cc \
         tests/zuul_preview_tests.cc
