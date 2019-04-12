@@ -69,8 +69,7 @@ public:
       return {};
 
     auto val = *(location->second);
-    queue.erase(location->second);
-    queue.push_front(val);
+    queue.splice(queue.begin(), queue, location->second);
     return val.second;
   }
 
